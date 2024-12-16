@@ -1,9 +1,8 @@
-import redis
-from fastapi import HTTPException
+import redis# {"conversationId":"c2646750-7516-4ea2-85dc-fefb609e6e02","source":"instruct"}
 
 # Redis 클라이언트 설정
 redis_client = redis.StrictRedis(
-    host="redis",  # Docker Compose에서 Redis 컨테이너 이름
+    host="localhost",  # 로컬 개발 환경에서는 localhost
     port=6379,
     decode_responses=True
 )
@@ -11,7 +10,9 @@ redis_client = redis.StrictRedis(
 # Redis 연결 확인 함수
 def get_redis_client():
     try:
-        redis_client.ping()  # 연결 테스트
+        redis_client.ping()
+        print("Connected to Redis server successfully!")
         return redis_client
-    except redis.exceptions.ConnectionError:
-        raise HTTPException(status_code=500, detail="Cannot connect to Redis server")
+    except redis.ConnectionError:
+        print("Failed to connect to Redis server!")
+        raise
