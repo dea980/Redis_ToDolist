@@ -34,19 +34,22 @@ def create_todo(todo_id: str, task: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating todo: {str(e)}")
 
-
 @router.put("/todos/{todo_id}")
 async def update_todo(todo_id: str, task: str):
     """
-    Redis에서 특정 작업을 업데이트합니다.
+    특정 작업을 업데이트합니다.
     """
     redis_key = f"todo:{todo_id}"
     try:
         if not redis_client.exists(redis_key):
             raise HTTPException(status_code=404, detail="Todo not found")
+
+        # Redis 데이터 업데이트
         redis_client.set(redis_key, task)
+        print(f"Updated Todo: {redis_key} -> {task}")  # 디버깅 로그 추가
         return {"message": "Todo updated successfully", "todo_id": todo_id, "task": task}
     except Exception as e:
+        print(f"Error updating todo: {e}")
         raise HTTPException(status_code=500, detail=f"Error updating todo: {str(e)}")
 
 

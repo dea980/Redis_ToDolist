@@ -69,20 +69,32 @@ function App() {
   };
 
   // 작업 수정
-  const saveEdit = async (id) => {
-    try {
-      const response = await fetch(`${API_URL}/todos/${encodeURIComponent(id)}?task=${encodeURIComponent(editTask)}`, {
-        method: "PUT",
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to update todo: ${response.statusText}`);
-      }
-      setEditingId(null);
-      fetchTodos();
-    } catch (error) {
-      console.error("Error updating todo:", error);
+  const saveEdit = (id) => {
+    if (!editTask.trim()) {
+      alert("Task cannot be empty.");
+      return;
     }
+  
+    fetch(`${API_URL}/todos/${encodeURIComponent(id)}?task=${encodeURIComponent(editTask)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to update task");
+        }
+        return response.json();
+      })
+      .then(() => {
+        setEditingId(null); // 수정 모드 종료
+        setEditTask(""); // 수정 입력 초기화
+        fetchTodos(); // 목록 다시 불러오기
+      })
+      .catch((err) => console.error("Error updating todo:", err));
   };
+  
+  
+  
 
   // 작업 삭제
   const deleteTodo = async (id) => {
