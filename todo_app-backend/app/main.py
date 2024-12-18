@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from app.routers import todos
+from app.routers import todos, chat
 from app.redis import get_redis_client
 from fastapi.middleware.cors import CORSMiddleware
 import json
@@ -53,3 +53,4 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # 라우터 추가
 app.include_router(todos.router)
+app.include_router(chat.router)

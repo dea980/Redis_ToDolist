@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import Chat from "./components/Chat";
 
 const API_URL = "http://localhost:8000";
 
 function App() {
+  const [activeView, setActiveView] = useState('todos'); // 'todos' or 'chat'
   const [todos, setTodos] = useState([]); // 할 일 목록
   const [task, setTask] = useState(""); // 새로운 작업 입력 값
   const [editingId, setEditingId] = useState(null); // 수정 중인 작업 ID
@@ -93,9 +95,6 @@ function App() {
       .catch((err) => console.error("Error updating todo:", err));
   };
   
-  
-  
-
   // 작업 삭제
   const deleteTodo = async (id) => {
     try {
@@ -112,62 +111,98 @@ function App() {
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>할 일 목록</h1>
-      <input
-        value={task}
-        onChange={(e) => setTask(e.target.value)}
-        placeholder="할 일을 입력하세요..."
-        style={{ padding: "10px", marginRight: "10px" }}
-      />
-      <button onClick={addTodo} style={{ padding: "10px 20px" }}>
-        Add Task
-      </button>
-      <ul style={{ listStyle: "none", padding: "0" }}>
-        {todos.map((todo) => (
-          <li key={todo.id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-            {editingId === todo.id ? (
-              <>
-                <input
-                  value={editTask}
-                  onChange={(e) => setEditTask(e.target.value)}
-                  style={{ marginRight: "10px" }}
-                />
-                <button onClick={() => saveEdit(todo.id)}>Save</button>
-                <button onClick={() => setEditingId(null)}>Cancel</button>
-              </>
-            ) : (
-              <>
-                {todo.task}
-                <button
-                  onClick={() => {
-                    setEditingId(todo.id);
-                    setEditTask(todo.task);
-                  }}
-                  style={{ marginLeft: "10px" }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => deleteTodo(todo.id)}
-                  style={{ marginLeft: "10px", color: "red" }}
-                >
-                  Delete
-                </button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+      <div style={{ marginBottom: "20px" }}>
+        <button 
+          onClick={() => setActiveView('todos')} 
+          style={{ 
+            padding: "10px 20px", 
+            marginRight: "10px",
+            backgroundColor: activeView === 'todos' ? '#007bff' : '#6c757d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Todo List
+        </button>
+        <button 
+          onClick={() => setActiveView('chat')} 
+          style={{ 
+            padding: "10px 20px",
+            backgroundColor: activeView === 'chat' ? '#007bff' : '#6c757d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Chat
+        </button>
+      </div>
 
-      {/* Redis Debugging Data */}
-      <h2>Redis Debugging Data</h2>
-      <ul style={{ listStyle: "none", padding: "0", background: "#f4f4f4", maxHeight: "300px", overflowY: "auto" }}>
-        {debugData.map((data) => (
-          <li key={data.id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-            <strong>{data.id}:</strong> {data.task}
-          </li>
-        ))}
-      </ul>
+      {activeView === 'todos' ? (
+        <>
+          <h1>할 일 목록</h1>
+          <input
+            value={task}
+            onChange={(e) => setTask(e.target.value)}
+            placeholder="할 일을 입력하세요..."
+            style={{ padding: "10px", marginRight: "10px" }}
+          />
+          <button onClick={addTodo} style={{ padding: "10px 20px" }}>
+            Add Task
+          </button>
+          <ul style={{ listStyle: "none", padding: "0" }}>
+            {todos.map((todo) => (
+              <li key={todo.id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
+                {editingId === todo.id ? (
+                  <>
+                    <input
+                      value={editTask}
+                      onChange={(e) => setEditTask(e.target.value)}
+                      style={{ marginRight: "10px" }}
+                    />
+                    <button onClick={() => saveEdit(todo.id)}>Save</button>
+                    <button onClick={() => setEditingId(null)}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    {todo.task}
+                    <button
+                      onClick={() => {
+                        setEditingId(todo.id);
+                        setEditTask(todo.task);
+                      }}
+                      style={{ marginLeft: "10px" }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteTodo(todo.id)}
+                      style={{ marginLeft: "10px", color: "red" }}
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {/* Redis Debugging Data */}
+          <h2>Redis Debugging Data</h2>
+          <ul style={{ listStyle: "none", padding: "0", background: "#f4f4f4", maxHeight: "300px", overflowY: "auto" }}>
+            {debugData.map((data) => (
+              <li key={data.id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
+                <strong>{data.id}:</strong> {data.task}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <Chat />
+      )}
     </div>
   );
 }
