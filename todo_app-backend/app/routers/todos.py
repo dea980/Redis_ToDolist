@@ -39,7 +39,8 @@ async def update_todo(todo_id: str, task: str):
     """
     특정 작업을 업데이트합니다.
     """
-    redis_key = f"todo:{todo_id}"
+    # Handle both prefixed and unprefixed todo_id
+    redis_key = todo_id if todo_id.startswith("todo:") else f"todo:{todo_id}"
     try:
         if not redis_client.exists(redis_key):
             raise HTTPException(status_code=404, detail="Todo not found")

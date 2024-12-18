@@ -91,6 +91,7 @@ function App() {
         setEditingId(null); // 수정 모드 종료
         setEditTask(""); // 수정 입력 초기화
         fetchTodos(); // 목록 다시 불러오기
+        fetchDebugData(); // Debug 데이터 업데이트
       })
       .catch((err) => console.error("Error updating todo:", err));
   };
