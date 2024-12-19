@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.redis import get_redis_client
 from urllib.parse import unquote
+import json
 
 router = APIRouter()
 
@@ -14,14 +15,14 @@ def list_todos():
     """
     try:
         keys = redis_client.keys("todo:*")
-        todos = {key: redis_client.get(key) for key in keys}  # decode_responses=True로 문자열 처리
+        todos = {key: json.loads(redis_client.get(key)) for key in keys}  # JSON 문자열을 파싱
         return {"todos": todos}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching todos: {str(e)}")
 
 
 @router.post("/todos/{todo_id}")
-def create_todo(todo_id: str, task: str):
+def create_todo(todo_id: str, task: str, date: str, goal: str):
     """
     새로운 작업을 Redis에 추가합니다.
     """
@@ -29,26 +30,34 @@ def create_todo(todo_id: str, task: str):
     try:
         if redis_client.exists(redis_key):
             raise HTTPException(status_code=400, detail="Todo already exists")
-        redis_client.set(redis_key, task)
-        return {"message": "Todo created successfully", "todo_id": todo_id, "task": task}
+        
+        todo_data = {
+            "task": task,
+            "date": date,
+            "goal": goal
+        }
+        redis_client.set(redis_key, json.dumps(todo_data))
+        return {"message": "Todo created successfully", "todo_id": todo_id, "data": todo_data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating todo: {str(e)}")
 
 @router.put("/todos/{todo_id}")
-async def update_todo(todo_id: str, task: str):
+async def update_todo(todo_id: str, task: str, date: str, goal: str):
     """
     특정 작업을 업데이트합니다.
     """
-    # Handle both prefixed and unprefixed todo_id
     redis_key = todo_id if todo_id.startswith("todo:") else f"todo:{todo_id}"
     try:
         if not redis_client.exists(redis_key):
             raise HTTPException(status_code=404, detail="Todo not found")
 
-        # Redis 데이터 업데이트
-        redis_client.set(redis_key, task)
-        print(f"Updated Todo: {redis_key} -> {task}")  # 디버깅 로그 추가
-        return {"message": "Todo updated successfully", "todo_id": todo_id, "task": task}
+        todo_data = {
+            "task": task,
+            "date": date,
+            "goal": goal
+        }
+        redis_client.set(redis_key, json.dumps(todo_data))
+        return {"message": "Todo updated successfully", "todo_id": todo_id, "data": todo_data}
     except Exception as e:
         print(f"Error updating todo: {e}")
         raise HTTPException(status_code=500, detail=f"Error updating todo: {str(e)}")
@@ -76,7 +85,7 @@ async def debug_redis():
     """
     try:
         keys = redis_client.keys("todo:*")
-        data = {key: redis_client.get(key) for key in keys}  # decode_responses=True로 문자열 처리
+        data = {key: redis_client.get(key) for key in keys}
         return {"debug_data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching debug data: {str(e)}")
